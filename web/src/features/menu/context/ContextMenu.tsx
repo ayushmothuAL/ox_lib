@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import HeaderButton from './components/HeaderButton';
 import ScaleFade from '../../../transitions/ScaleFade';
 import MarkdownComponents from '../../../config/MarkdownComponents';
+import React from 'react';
 
 const openMenu = (id: string | undefined) => {
   fetchNui<ContextMenuProps>('openContext', { id: id, back: true });
@@ -17,32 +18,52 @@ const useStyles = createStyles((theme) => ({
   container: {
     position: 'absolute',
     top: '15%',
-    right: '25%',
+    right: '5%',
     width: 320,
     height: 580,
+    zIndex: 112,
   },
+
+  gradientOverlay: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    background: 'linear-gradient(90deg, rgba(18,18,18,0) 9%, rgba(0, 0, 0, 0.62) 100%)',
+    zIndex: 1,
+    pointerEvents: 'none', 
+    display: 'none',
+  },
+  gradientOverlayVisible: {
+    display: 'block',
+  },
+
   header: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    gap: 6,
+    marginBottom: 20,
+    gap: 9,
   },
   titleContainer: {
-    borderRadius: 4,
     flex: '1 85%',
-    backgroundColor: theme.colors.dark[6],
+    backgroundColor: "rgba(112, 162, 204, 0.5)",
+      border: '1px solid rgba(30, 136, 229, 0.3)',
+    borderRadius: 8,
   },
   titleText: {
-    color: theme.colors.dark[0],
+    color: 'white',
     padding: 6,
     textAlign: 'center',
+    fontFamily: 'Roboto',
+    fontWeight: 400,
   },
   buttonsContainer: {
     height: 560,
     overflowY: 'scroll',
   },
   buttonsFlexWrapper: {
-    gap: 3,
+    gap: 13,
   },
 }));
 
@@ -85,6 +106,8 @@ const ContextMenu: React.FC = () => {
   });
 
   return (
+    <>
+    <Box className={`${classes.gradientOverlay} ${visible ? classes.gradientOverlayVisible : ''}`} />
     <Box className={classes.container}>
       <ScaleFade visible={visible}>
         <Flex className={classes.header}>
@@ -106,7 +129,8 @@ const ContextMenu: React.FC = () => {
           </Stack>
         </Box>
       </ScaleFade>
-    </Box>
+      </Box>
+    </>
   );
 };
 

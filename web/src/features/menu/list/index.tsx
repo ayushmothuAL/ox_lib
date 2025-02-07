@@ -10,9 +10,8 @@ import LibIcon from '../../../components/LibIcon';
 
 const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCount: number; selected: number }) => ({
   tooltip: {
-    backgroundColor: theme.colors.dark[6],
-    color: theme.colors.dark[2],
-    borderRadius: theme.radius.sm,
+    backgroundColor: "rgba(22, 22, 32, 0.5)",
+    color: "white",
     maxWidth: 350,
     whiteSpace: 'normal',
   },
@@ -33,20 +32,21 @@ const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCo
     height: 'fit-content',
     maxHeight: 415,
     overflow: 'hidden',
-    borderRadius: params.itemCount <= 6 || params.selected === params.itemCount - 1 ? theme.radius.md : undefined,
-    backgroundColor: theme.colors.dark[8],
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
+    borderRadius: 0,
+    backgroundColor: 'rgba(112, 162, 204, 0.4)',
+    borderLeft: 'solid 2px rgba(30, 136, 229, 0.53)',
+    borderRight: 'solid 2px rgba(30, 136, 229, 0.53)',
   },
   scrollArrow: {
-    backgroundColor: theme.colors.dark[8],
+    backgroundColor: 'rgba(112, 162, 204, 0.4)',
     textAlign: 'center',
-    borderBottomLeftRadius: theme.radius.md,
-    borderBottomRightRadius: theme.radius.md,
+    borderLeft: 'solid 2px rgba(30, 136, 229, 0.53)',
+    borderRight: 'solid 2px rgba(30, 136, 229, 0.53)',
+    borderBottom: 'solid 2px rgba(30, 136, 229, 0.53)',
     height: 25,
   },
   scrollArrowIcon: {
-    color: theme.colors.dark[2],
+    color: 'white',
     fontSize: 20,
   },
 }));
@@ -219,7 +219,7 @@ const ListMenu: React.FC = () => {
             <Header title={menu.title} />
             <Box className={classes.buttonsWrapper} onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => moveMenu(e)}>
               <FocusTrap active={visible}>
-                <Stack spacing={8} p={8} sx={{ overflowY: 'scroll' }}>
+                <Stack spacing={8} p={15} sx={{ overflowY: 'scroll' }}>
                   {menu.items.map((item, index) => (
                     <React.Fragment key={`menu-item-${index}`}>
                       {item.label && (

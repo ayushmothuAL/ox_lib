@@ -6,6 +6,7 @@ import { isIconUrl } from '../../../../utils/isIconUrl';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MarkdownComponents from '../../../../config/MarkdownComponents';
 import LibIcon from '../../../../components/LibIcon';
+import React from 'react';
 
 const openMenu = (id: string | undefined) => {
   fetchNui<ContextMenuProps>('openContext', { id: id, back: false });
@@ -15,64 +16,88 @@ const clickContext = (id: string) => {
   fetchNui('clickContext', id);
 };
 
-const useStyles = createStyles((theme, params: { disabled?: boolean; readOnly?: boolean }) => ({
+const useStyles = createStyles((theme) => ({
   inner: {
     justifyContent: 'flex-start',
   },
   label: {
     width: '100%',
-    color: params.disabled ? theme.colors.dark[3] : theme.colors.dark[0],
+    color: theme.white,
     whiteSpace: 'pre-wrap',
+    transition: 'color 0.2s ease',
   },
   button: {
     height: 'fit-content',
     width: '100%',
-    padding: 10,
+    backgroundColor: 'rgba(22, 22, 32, 0.5)',
+    borderRadius: 10,
+    padding: theme.spacing.md,
+    fontWeight: 400,
+    transition: 'all 0.3s ease',
+    
     '&:hover': {
-      backgroundColor: params.readOnly ? theme.colors.dark[6] : undefined,
-      cursor: params.readOnly ? 'unset' : 'pointer',
+      backgroundColor: "rgba(112, 162, 204, 0.5)",
+      border: '1px solid rgba(30, 136, 229, 0.3)',
+      transform: 'translateY(-2px) scale(0.9)',
+      fontWeight: 400,
+    },
+    '&:disabled': {
+      backgroundColor: 'rgba(22, 22, 32, 0.9)',
+      boxShadow: 
+        'inset 0 20px 20px -20px rgba(0, 0, 0, 0.87), ' +
+        'inset 0 -20px 20px -20px rgba(0, 0, 0, 0.87)',
     },
     '&:active': {
-      transform: params.readOnly ? 'unset' : undefined,
+      transform: 'translateY(0)',
     },
   },
   iconImage: {
-    maxWidth: '25px',
+    width: '24px',
+    height: '24px',
+    maxWidth: '24px',
+    maxHeight:'24px',
+    borderRadius: theme.radius.sm,
   },
   description: {
-    color: params.disabled ? theme.colors.dark[3] : theme.colors.dark[2],
-    fontSize: 12,
+    color: theme.colors.gray[5],
+    fontSize: theme.fontSizes.xs,
   },
   dropdown: {
-    padding: 10,
-    color: theme.colors.dark[0],
-    fontSize: 14,
-    maxWidth: 256,
+    padding: theme.spacing.md,
+    backgroundColor: 'rgba(22, 22, 32, 0.5)',
+    fontSize: theme.fontSizes.sm,
+    maxWidth: 300,
     width: 'fit-content',
-    border: 'none',
+    border: '2px solid rgba(30, 136, 229, 0.53)',
+    borderRadius: theme.radius.md,
   },
   buttonStack: {
-    gap: 4,
+    gap: theme.spacing.xs,
     flex: '1',
   },
   buttonGroup: {
-    gap: 4,
+    gap: theme.spacing.xs,
     flexWrap: 'nowrap',
   },
   buttonIconContainer: {
-    width: 25,
-    height: 25,
+    color: theme.white,
+    width: 28,
+    height: 28,
     justifyContent: 'center',
     alignItems: 'center',
+    transition: 'color 0.2s ease',
   },
   buttonTitleText: {
     overflowWrap: 'break-word',
+    fontWeight: 500,
   },
   buttonArrowContainer: {
+    color: theme.white,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 25,
-    height: 25,
+    width: 28,
+    height: 28,
+    transition: 'transform 0.2s ease',
   },
 }));
 
@@ -81,105 +106,102 @@ const ContextButton: React.FC<{
 }> = ({ option }) => {
   const button = option[1];
   const buttonKey = option[0];
-  const { classes } = useStyles({ disabled: button.disabled, readOnly: button.readOnly });
+  const { classes, theme } = useStyles();
 
   return (
-    <>
-      <HoverCard
-        position="right-start"
-        disabled={button.disabled || !(button.metadata || button.image)}
-        openDelay={200}
-      >
-        <HoverCard.Target>
-          <Button
-            classNames={{ inner: classes.inner, label: classes.label, root: classes.button }}
-            onClick={() =>
-              !button.disabled && !button.readOnly
-                ? button.menu
-                  ? openMenu(button.menu)
-                  : clickContext(buttonKey)
-                : null
-            }
-            variant="default"
-            disabled={button.disabled}
-          >
-            <Group position="apart" w="100%" noWrap>
-              <Stack className={classes.buttonStack}>
-                {(button.title || Number.isNaN(+buttonKey)) && (
-                  <Group className={classes.buttonGroup}>
-                    {button?.icon && (
-                      <Stack className={classes.buttonIconContainer}>
-                        {typeof button.icon === 'string' && isIconUrl(button.icon) ? (
-                          <img src={button.icon} className={classes.iconImage} alt="Missing img" />
-                        ) : (
-                          <LibIcon
-                            icon={button.icon as IconProp}
-                            fixedWidth
-                            size="lg"
-                            style={{ color: button.iconColor }}
-                            animation={button.iconAnimation}
-                          />
-                        )}
-                      </Stack>
-                    )}
-                    <Text className={classes.buttonTitleText}>
-                      <ReactMarkdown components={MarkdownComponents}>{button.title || buttonKey}</ReactMarkdown>
-                    </Text>
-                  </Group>
-                )}
-                {button.description && (
-                  <Text className={classes.description}>
-                    <ReactMarkdown components={MarkdownComponents}>{button.description}</ReactMarkdown>
+    <HoverCard
+      position="left-start"
+      disabled={button.disabled || !(button.metadata || button.image)}
+      openDelay={200}
+    >
+      <HoverCard.Target>
+        <Button
+          classNames={{ inner: classes.inner, label: classes.label, root: classes.button }}
+          onClick={() =>
+            !button.disabled && !button.readOnly
+              ? button.menu
+                ? openMenu(button.menu)
+                : clickContext(buttonKey)
+              : null
+          }
+          variant="default"
+          disabled={button.disabled}
+        >
+          <Group position="apart" w="100%" noWrap>
+            <Stack className={classes.buttonStack}>
+              {(button.title || Number.isNaN(+buttonKey)) && (
+                <Group className={classes.buttonGroup}>
+                  {button?.icon && (
+                    <Stack className={classes.buttonIconContainer}>
+                      {typeof button.icon === 'string' && isIconUrl(button.icon) ? (
+                        <img src={button.icon} className={classes.iconImage} alt="Icon" />
+                      ) : (
+                        <LibIcon
+                          icon={button.icon as IconProp}
+                          fixedWidth
+                          size="lg"
+                          style={{ color: button.iconColor || 'white' }}
+                          animation={button.iconAnimation}
+                        />
+                      )}
+                    </Stack>
+                  )}
+                  <Text className={classes.buttonTitleText}>
+                    <ReactMarkdown components={MarkdownComponents}>{button.title || buttonKey}</ReactMarkdown>
                   </Text>
-                )}
-                {button.progress !== undefined && (
-                  <Progress value={button.progress} size="sm" color={button.colorScheme || 'dark.3'} />
+                </Group>
+              )}
+              {button.description && (
+                <Text className={classes.description}>
+                  <ReactMarkdown components={MarkdownComponents}>{button.description}</ReactMarkdown>
+                </Text>
+              )}
+              {button.progress !== undefined && (
+                <Progress value={button.progress} size="sm" color={button.colorScheme || theme.colors.blue[5]} />
+              )}
+            </Stack>
+            {(button.menu || button.arrow) && button.arrow !== false && (
+              <Stack className={classes.buttonArrowContainer}>
+                <LibIcon icon="chevron-right" fixedWidth />
+              </Stack>
+            )}
+          </Group>
+        </Button>
+      </HoverCard.Target>
+      <HoverCard.Dropdown className={classes.dropdown}>
+        {button.image && <Image src={button.image} radius="md" mb="sm" />}
+        {Array.isArray(button.metadata) ? (
+          button.metadata.map(
+            (
+              metadata: string | { label: string; value?: any; progress?: number; colorScheme?: string },
+              index: number
+            ) => (
+              <Stack key={`context-metadata-${index}`} spacing="xs">
+                <Text>
+                  {typeof metadata === 'string' ? `${metadata}` : `${metadata.label}: ${metadata?.value ?? ''}`}
+                </Text>
+                {typeof metadata === 'object' && metadata.progress !== undefined && (
+                  <Progress
+                    value={metadata.progress}
+                    size="sm"
+                    color={metadata.colorScheme || button.colorScheme || theme.colors.blue[5]}
+                  />
                 )}
               </Stack>
-              {(button.menu || button.arrow) && button.arrow !== false && (
-                <Stack className={classes.buttonArrowContainer}>
-                  <LibIcon icon="chevron-right" fixedWidth />
-                </Stack>
-              )}
-            </Group>
-          </Button>
-        </HoverCard.Target>
-        <HoverCard.Dropdown className={classes.dropdown}>
-          {button.image && <Image src={button.image} />}
-          {Array.isArray(button.metadata) ? (
-            button.metadata.map(
-              (
-                metadata: string | { label: string; value?: any; progress?: number; colorScheme?: string },
-                index: number
-              ) => (
-                <>
-                  <Text key={`context-metadata-${index}`}>
-                    {typeof metadata === 'string' ? `${metadata}` : `${metadata.label}: ${metadata?.value ?? ''}`}
-                  </Text>
-
-                  {typeof metadata === 'object' && metadata.progress !== undefined && (
-                    <Progress
-                      value={metadata.progress}
-                      size="sm"
-                      color={metadata.colorScheme || button.colorScheme || 'dark.3'}
-                    />
-                  )}
-                </>
-              )
             )
-          ) : (
-            <>
-              {typeof button.metadata === 'object' &&
-                Object.entries(button.metadata).map((metadata: { [key: string]: any }, index) => (
-                  <Text key={`context-metadata-${index}`}>
-                    {metadata[0]}: {metadata[1]}
-                  </Text>
-                ))}
-            </>
-          )}
-        </HoverCard.Dropdown>
-      </HoverCard>
-    </>
+          )
+        ) : (
+          <>
+            {typeof button.metadata === 'object' &&
+              Object.entries(button.metadata).map((metadata: { [key: string]: any }, index) => (
+                <Text key={`context-metadata-${index}`}>
+                  {metadata[0]}: {metadata[1]}
+                </Text>
+              ))}
+          </>
+        )}
+      </HoverCard.Dropdown>
+    </HoverCard>
   );
 };
 

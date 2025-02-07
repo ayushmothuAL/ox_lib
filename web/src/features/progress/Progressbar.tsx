@@ -1,86 +1,188 @@
-import React from 'react';
-import { Box, createStyles, Text } from '@mantine/core';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, createStyles, keyframes } from '@mantine/core';
 import { useNuiEvent } from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
-import ScaleFade from '../../transitions/ScaleFade';
-import type { ProgressbarProps } from '../../typings';
+
+const popOut = keyframes({
+  '0%': { transform: 'scale(1)' },
+  '50%': { transform: 'scale(1.08)' },
+  '100%': { transform: 'scale(0)' },
+});
 
 const useStyles = createStyles((theme) => ({
-  container: {
-    width: 350,
-    height: 45,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.dark[5],
-    overflow: 'hidden',
+  progressContainer: {
+    display: 'none',
+    zIndex: 5,
+    color: '#fff',
+    width: '19%',
+    position: 'fixed',
+    bottom: '9%',
+    left: 0,
+    right: 0,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    fontSize: '2.7vh',
+    fontFamily: '"Pathway Gothic One", sans-serif',
+    fontStyle: 'normal',
   },
-  wrapper: {
-    width: '100%',
-    height: '20%',
+  progressLabels: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontFamily: 'sans-serif',
+    fontWeight: 550,
+    alignItems: 'center',
+  },
+  progressLabel: {
+    fontSize: '18px',
+    lineHeight: '4vh',
+    position: 'relative',
+    color: '#ffffff',
+    zIndex: 10,
+    fontWeight: 'bold',
+    textShadow: '0 0 10px rgba(255, 255, 255, 0.7)',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    bottom: 0,
-    position: 'absolute',
   },
-  bar: {
+  loadingDots: {
+    width: '20px',
+    display: 'inline-block',
+    textAlign: 'left',
+    marginLeft: '5px',
+  },
+  progressPercentage: {
+    fontSize: '1.7vh',
+    lineHeight: '4vh',
+    position: 'relative',
+    color: '#fff',
+    zIndex: 10,
+    fontWeight: 'bold',
+    textShadow: '0 0 10px rgba(30, 136, 229, 0.7)',
+  },
+  progressBarContainer: {
+    background: `repeating-linear-gradient(
+      135deg,
+      #828686,
+      #828686 1.4px,
+      transparent 3px,
+      transparent 4px
+    )`,
+    height: '0.9vh',
+    position: 'relative',
+    display: 'block',
+    borderRadius: '4px',
+    overflow: 'hidden',
+    outline: '2px solid rgba(255, 255, 255, 0.3)',
+  },
+  progressBar: {
+    backgroundColor: '#1E88E5',
+    width: '0%',
     height: '100%',
-    backgroundColor: theme.colors[theme.primaryColor][theme.fn.primaryShade()],
-  },
-  labelWrapper: {
+    borderRadius: '4px',
+    transition: 'width 0.3s',
+    transitionTimingFunction: 'ease-out',
+    boxShadow: '0 0 30px #c2ff49cb, 0 0 15px #1E88E5',
     position: 'absolute',
-    display: 'flex',
-    width: 350,
-    height: 45,
-    alignItems: 'center',
-    justifyContent: 'center',
+    left: 0,
+    top: 0,
   },
-  label: {
-    maxWidth: 350,
-    padding: 8,
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    fontSize: 20,
-    color: theme.colors.gray[3],
-    textShadow: theme.shadows.sm,
+  popOut: {
+    // animation: `${popOut} 0.5s ease-out forwards`,
   },
 }));
 
+const LoadingDots: React.FC = () => {
+  const [dots, setDots] = useState('');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev === '') return '.';
+        if (prev === '.') return '..';
+        if (prev === '..') return '...';
+        return '';
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <span>{dots}</span>;
+};
+
 const Progressbar: React.FC = () => {
-  const { classes } = useStyles();
-  const [visible, setVisible] = React.useState(false);
-  const [label, setLabel] = React.useState('');
-  const [duration, setDuration] = React.useState(0);
+  const { classes, cx } = useStyles();
+  const [visible, setVisible] = useState(false);
+  const [label, setLabel] = useState('');
+  const [duration, setDuration] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
-  useNuiEvent('progressCancel', () => setVisible(false));
+  useNuiEvent('progressCancel', () => {
+    setVisible(false);
+    setLabel('CANCELLED');
+    setProgress(100);
+    setTimeout(() => {
+      setVisible(false);
+      setProgress(0);
+      setIsComplete(false);
+    }, 1000);
+  });
 
-  useNuiEvent<ProgressbarProps>('progress', (data) => {
+  useNuiEvent('progress', (data: { label: string; duration: number }) => {
     setVisible(true);
     setLabel(data.label);
     setDuration(data.duration);
+    setProgress(0);
+    setIsComplete(false);
   });
 
+  useEffect(() => {
+    if (visible && duration > 0) {
+      const startTime = Date.now();
+      const animateProgress = () => {
+        const timeElapsed = Date.now() - startTime;
+        const newProgress = Math.min((timeElapsed / duration) * 100, 100);
+        setProgress(newProgress);
+
+        if (newProgress < 100) {
+          requestAnimationFrame(animateProgress);
+        } else {
+          setIsComplete(true);
+          setTimeout(() => {
+            setVisible(false);
+            fetchNui('progressComplete');
+          }, 500);
+        }
+      };
+
+      requestAnimationFrame(animateProgress);
+    }
+  }, [visible, duration]);
+
+  if (!visible) return null;
+
   return (
-    <>
-      <Box className={classes.wrapper}>
-        <ScaleFade visible={visible} onExitComplete={() => fetchNui('progressComplete')}>
-          <Box className={classes.container}>
-            <Box
-              className={classes.bar}
-              onAnimationEnd={() => setVisible(false)}
-              sx={{
-                animation: 'progress-bar linear',
-                animationDuration: `${duration}ms`,
-              }}
-            >
-              <Box className={classes.labelWrapper}>
-                <Text className={classes.label}>{label}</Text>
-              </Box>
-            </Box>
-          </Box>
-        </ScaleFade>
+    <Box className={cx(classes.progressContainer, { [classes.popOut]: isComplete })} style={{ display: 'block' }}>
+      <Box className={classes.progressLabels}>
+        <Text className={classes.progressLabel}>
+          {label}
+          <span className={classes.loadingDots}>
+            <LoadingDots />
+          </span>
+        </Text>
+        <Text className={classes.progressPercentage}>{`${Math.round(progress)}%`}</Text>
       </Box>
-    </>
+      <Box className={classes.progressBarContainer}>
+        <Box 
+          className={classes.progressBar} 
+          style={{ 
+            width: `${progress}%`,
+            transition: 'none',
+            display: 'block',
+          }} 
+        />
+      </Box>
+    </Box>
   );
 };
 

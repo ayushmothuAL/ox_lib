@@ -4,9 +4,12 @@ import React from 'react';
 const useStyles = createStyles((theme) => ({
   container: {
     textAlign: 'center',
-    borderTopLeftRadius: theme.radius.md,
-    borderTopRightRadius: theme.radius.md,
-    backgroundColor: theme.colors.dark[6],
+    color: 'white',
+    backgroundColor: 'rgba(112, 162, 204, 0.4)',
+    borderTop: 'solid 2px rgba(30, 136, 229, 0.53)',
+    borderLeft: 'solid 2px rgba(30, 136, 229, 0.53)',
+    borderRight: 'solid 2px rgba(30, 136, 229, 0.53)',
+    borderBottom: 'none',
     height: 60,
     width: 384,
     display: 'flex',

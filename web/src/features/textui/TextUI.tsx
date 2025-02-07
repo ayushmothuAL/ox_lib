@@ -25,11 +25,13 @@ const useStyles = createStyles((theme, params: { position?: TextUiPosition }) =>
     fontSize: 16,
     padding: 12,
     margin: 8,
-    backgroundColor: theme.colors.dark[6],
+    backgroundColor: 'rgba(22, 22, 32, 0.6)',
+      boxShadow: 
+        'inset 0 20px 20px -20px rgba(0, 0, 0, 0.87), ' +
+        'inset 0 -20px 20px -20px rgba(0, 0, 0, 0.87)',
+    borderRadius: 8,
     color: theme.colors.dark[0],
     fontFamily: 'Roboto',
-    borderRadius: theme.radius.sm,
-    boxShadow: theme.shadows.sm,
   },
 }));
 
